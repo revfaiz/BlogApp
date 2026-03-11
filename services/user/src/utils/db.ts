@@ -1,41 +1,43 @@
 // Connects the user service to MongoDB and exports the database bootstrap helper.
 import mongoose from 'mongoose';
 
+const mongoUri = process.env.MONGO_URI;
+const dbName = process.env.DB_NAME;
 
 const connectDb = async () => {
-    console.log('i am in connectDb')
+    console.log('[UserDB] connectDb called');
+
+    if (!mongoUri || !dbName) {
+        throw new Error('MONGO_URI and DB_NAME must be defined before connecting to MongoDB');
+    }
+
     mongoose.set('strictQuery', true);
-    console.log('i am after')
-    
 
-  // 1. Ask Mongoose directly for the state
-  // 1 = connected, 2 = connecting
-//   if (mongoose.connection.readyState === 1) {
-//     console.log('i am if ')
-//     console.log('[DB] Using existing database connection');
-//     return;
-//   }
+    // Reuse the active connection when the service is already connected or still connecting.
+    if (mongoose.connection.readyState === 1) {
+        console.log('[UserDB] Using existing database connection');
+        return;
+    }
 
-//   if (mongoose.connection.readyState === 2) {
-//     console.log('[DB] Database connection is already in progress...');
-//     return;
-//   }
+    if (mongoose.connection.readyState === 2) {
+        console.log('[UserDB] Database connection is already in progress');
+        return;
+    }
 
   try {
-    const db = await mongoose.connect(process.env.MONGO_URI as string, {
-      dbName: process.env.DB_NAME as string,
+    console.log('[UserDB] Opening MongoDB connection', { dbName });
+    const db = await mongoose.connect(mongoUri, {
+      dbName,
     });
 
-    // Optional chaining keeps TypeScript happy!
     const isConnected = db.connections[0]?.readyState === 1;
     
-    if (isConnected ) {
-       console.log(`[DB] New connection established`);
+    if (isConnected) {
+       console.log('[UserDB] New database connection established');
     }
-    console.log('i am connected')
   } catch (error) {
-    console.error('[DB] Connection error:', error);
-    // Important: Re-throw so app.js knows the DB failed
+    console.error('[UserDB] Connection error:', error);
+    // Re-throw so the server bootstrap can fail fast instead of serving half-initialized requests.
     throw error; 
   }
 };

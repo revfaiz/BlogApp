@@ -6,11 +6,11 @@ import uploadFile from '../middleware/multer.js';
 
 const router = express.Router();
 
-router.post('/login',loginUser)
-router.get('/me',isAuth,myProfile)
+router.post('/login', loginUser);
+router.get('/me', isAuth, myProfile);
 
-router.get('/user/:id', getuserProfile)
-router.post('/user/update', isAuth, updateUser)
-router.put('/user/updatePic', isAuth, uploadFile, updateProfilePic)
+router.get('/user/:id', getuserProfile);
+router.post('/user/update', isAuth, updateUser);
+router.put('/user/updatePic', isAuth, uploadFile, updateProfilePic);
 
 export default router;

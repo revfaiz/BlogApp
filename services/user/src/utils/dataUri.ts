@@ -1,12 +1,13 @@
 // Converts uploaded user files into data URI strings for image hosting uploads.
 import DataUriParser from 'datauri/parser.js';
+import type { Express } from 'express';
 
 import path from "path"
 
-const getBuffer = (file: any)=>{
+const getBuffer = (file: Express.Multer.File) => {
     const parser = new DataUriParser();
-    const Ext = path.extname(file.originalname).toString()
-    return parser.format(Ext, file.buffer)
+    const extension = path.extname(file.originalname).toString();
+    return parser.format(extension, file.buffer);
 
 
 }
