@@ -13,6 +13,7 @@ interface CreateBlogBody {
 }
 
 export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
+    // Normalize incoming strings once so validation and persistence use the same values.
     const { title, description, content, category } = (req.body ?? {}) as CreateBlogBody;
     const normalizedTitle = title?.trim();
     const normalizedDescription = description?.trim();
@@ -20,7 +21,14 @@ export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
     const normalizedCategory = category?.trim();
     const authorId = req.user?._id;
     const file = req.file;
-    console.log('[AuthorBlogController] Received blog creation request', { authorId });
+    console.log('[AuthorBlogController] Received blog creation request', {
+        authorId,
+        hasTitle: Boolean(normalizedTitle),
+        hasDescription: Boolean(normalizedDescription),
+        hasContent: Boolean(normalizedContent),
+        hasCategory: Boolean(normalizedCategory),
+        hasFile: Boolean(file),
+    });
 
     if (!normalizedTitle || !normalizedDescription || !normalizedContent || !normalizedCategory) {
         console.log('[AuthorBlogController] Missing required fields for blog creation');
@@ -60,8 +68,12 @@ export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
     const cloud =  await cloudinary.v2.uploader.upload(fileBuffer.content, {
         folder: "blogs"
     });
-    console.log('[AuthorBlogController] Cloudinary upload successful', { imageUrl: cloud.secure_url });
+    console.log('[AuthorBlogController] Cloudinary upload successful', {
+        imageUrl: cloud.secure_url,
+        publicId: cloud.public_id,
+    });
 
+    // Insert the new blog row after all validation and upload work completes.
     console.log('[AuthorBlogController] Inserting blog into database');
     const result = await sql`INSERT INTO BLOGS(title, description, 
                         image, content, category,
@@ -70,10 +82,12 @@ export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
                         ${cloud.secure_url},     
                         ${normalizedContent}, ${normalizedCategory},
                         ${authorId}) RETURNING *`;
-    console.log('[AuthorBlogController] Blog insert successful', { blogId: result[0]?.id });
+
+    const createdBlog = result[0];
+    console.log('[AuthorBlogController] Blog insert successful', { blogId: createdBlog?.id, authorId });
     res.status(201).json({
         message: "Blog created successfully",
-        blog: result[0]
+        blog: createdBlog
     })
 
 

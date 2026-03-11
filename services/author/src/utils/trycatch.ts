@@ -8,21 +8,20 @@ import type { Request, RequestHandler, Response, NextFunction } from 'express';
 const TryCatch = (handler: RequestHandler): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            // Promise.resolve ensures both sync and async handlers are handled
+            // Promise.resolve keeps the wrapper compatible with both sync and async handlers.
             await Promise.resolve(handler(req, res, next));
             
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
-            // 1. Log the error for the developer
             console.error(`[TryCatch Error] inside ${handler.name || 'anonymous function'}:`, errorMessage);
 
             if (res.headersSent) {
+                console.log('[TryCatch] Response already sent, delegating error to next middleware');
                 next(error);
                 return;
             }
 
-            // 2. Send a structured error response to the client
-            // Note: In a larger app, you'd call next(error) to use a global error handler
+            // Return a consistent JSON error shape for author service endpoints.
             res.status(500).json({
                 success: false,
                 message: errorMessage,

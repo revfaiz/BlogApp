@@ -11,13 +11,20 @@ const app = express();
 const PORT = Number(process.env.PORT) || 5001;
 
 const validateEnvironment = (): void => {
-    const required = ['CLOUD_NAME', 'CLOUD_API_KEY', 'CLOUD_API_SECRET'];
+    const required = ['DB_URL', 'JWT_SEC', 'CLOUD_NAME', 'CLOUD_API_KEY', 'CLOUD_API_SECRET'];
     const missing = required.filter((name) => !process.env[name]);
 
     if (missing.length > 0) {
         throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
     }
-    console.log('[AuthorService] Environment variables validated');};
+
+    console.log('[AuthorService] Environment variables validated', {
+        port: PORT,
+        hasDbUrl: Boolean(process.env.DB_URL),
+        hasJwtSecret: Boolean(process.env.JWT_SEC),
+        hasCloudName: Boolean(process.env.CLOUD_NAME),
+    });
+};
 
 const configureCloudinary = (): void => {
     cloudinary.config({
@@ -30,6 +37,7 @@ const configureCloudinary = (): void => {
 
 app.use(express.json({ limit: '5mb' }));
 
+// Log every request so route-level issues can be traced quickly during development.
 app.use((req, _res, next) => {
     console.log(`[AuthorService] [${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
     next();
@@ -47,10 +55,12 @@ app.get('/', (_req, res) => {
 app.use('/api/v1', blogRoutes);
 
 app.use((_req, res) => {
+    console.log('[AuthorService] Route not found');
     res.status(404).json({ message: 'Route not found' });
 });
 
 const initDB = async (): Promise<void> => {
+    // Keep table bootstrapping in one place so startup failures are explicit.
     console.log('[AuthorService] Initializing BLOGS table');
     await sql`
     CREATE TABLE IF NOT EXISTS BLOGS(
@@ -90,6 +100,7 @@ const initDB = async (): Promise<void> => {
 
 const bootstrap = async (): Promise<void> => {
     try {
+        // Validate configuration before any external connection is attempted.
         validateEnvironment();
         configureCloudinary();
 

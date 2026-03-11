@@ -9,5 +9,7 @@ if (!dbUrl) {
 	throw new Error('DB_URL is required to initialize database connection');
 }
 
+console.log('[AuthorDB] Neon client initialized');
+
 const sql = neon(dbUrl);
 export default sql;

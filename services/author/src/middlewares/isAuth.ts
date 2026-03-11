@@ -26,6 +26,7 @@ export const isAuth = async (
     next: NextFunction
 ): Promise<void> => {
     try {
+        // Guard against startup misconfiguration before handling protected requests.
         const jwtSecret = process.env.JWT_SEC;
         if (!jwtSecret) {
             console.error('[Auth] JWT_SEC is not configured');
@@ -44,6 +45,7 @@ export const isAuth = async (
             return void res.status(401).json({ message: "Please login - invalid token format" });
         }
 
+        // The author service expects the full user object to be embedded in the JWT payload.
         const decodeValue = jwt.verify(token, jwtSecret) as AuthJwtPayload;
 
         if (!decodeValue?.user) {
@@ -52,7 +54,7 @@ export const isAuth = async (
         }
 
         req.user = decodeValue.user;
-        console.log('[Auth] Auth success for user');
+        console.log('[Auth] Auth success for user', { userId: decodeValue.user._id });
         next();
     } catch (err) {
         console.error("[Auth] JWT verification error:", err);
