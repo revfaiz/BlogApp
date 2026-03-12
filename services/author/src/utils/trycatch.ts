@@ -14,6 +14,7 @@ const TryCatch = (handler: RequestHandler): RequestHandler => {
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
             console.error(`[TryCatch Error] inside ${handler.name || 'anonymous function'}:`, errorMessage);
+            console.error('[TryCatch Full Error]:', error);
 
             if (res.headersSent) {
                 console.log('[TryCatch] Response already sent, delegating error to next middleware');

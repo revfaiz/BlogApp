@@ -1,4 +1,5 @@
 // Handles author blog creation requests, image uploads, and database inserts.
+import { constants } from "buffer";
 import type { AuthenticatedRequest } from "../middlewares/isAuth.js";
 import getBuffer from "../utils/dataUri.js";
 import sql from "../utils/db.js";
@@ -10,6 +11,7 @@ interface CreateBlogBody {
     description?: string;
     content?: string;
     category?: string;
+    image?: string,
 }
 
 export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
@@ -21,14 +23,7 @@ export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
     const normalizedCategory = category?.trim();
     const authorId = req.user?._id;
     const file = req.file;
-    console.log('[AuthorBlogController] Received blog creation request', {
-        authorId,
-        hasTitle: Boolean(normalizedTitle),
-        hasDescription: Boolean(normalizedDescription),
-        hasContent: Boolean(normalizedContent),
-        hasCategory: Boolean(normalizedCategory),
-        hasFile: Boolean(file),
-    });
+    console.log('[AuthorBlogController] Received blog creation request');
 
     if (!normalizedTitle || !normalizedDescription || !normalizedContent || !normalizedCategory) {
         console.log('[AuthorBlogController] Missing required fields for blog creation');
@@ -68,10 +63,7 @@ export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
     const cloud =  await cloudinary.v2.uploader.upload(fileBuffer.content, {
         folder: "blogs"
     });
-    console.log('[AuthorBlogController] Cloudinary upload successful', {
-        imageUrl: cloud.secure_url,
-        publicId: cloud.public_id,
-    });
+    console.log('[AuthorBlogController] Cloudinary upload successful');
 
     // Insert the new blog row after all validation and upload work completes.
     console.log('[AuthorBlogController] Inserting blog into database');
@@ -91,4 +83,4 @@ export const createBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
     })
 
 
-})  
+}) 

@@ -1,11 +1,11 @@
 // Connects the user service to MongoDB and exports the database bootstrap helper.
 import mongoose from 'mongoose';
 
-const mongoUri = process.env.MONGO_URI;
-const dbName = process.env.DB_NAME;
 
 const connectDb = async () => {
-    console.log('[UserDB] connectDb called');
+  const mongoUri = process.env.MONGO_URI;
+  const dbName = process.env.DB_NAME;
+  console.log('[UserDB] connectDb called');
 
     if (!mongoUri || !dbName) {
         throw new Error('MONGO_URI and DB_NAME must be defined before connecting to MongoDB');
