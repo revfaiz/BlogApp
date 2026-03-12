@@ -21,7 +21,7 @@ export const updateBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
 
     const file = req.file;
 
-    const blog = await sql`select * from blogs where id = ${id}`;
+    const blog = await sql`SELECT * FROM BLOGS WHERE id = ${id}`;
 
     if(!blog.length){
         console.log('No Blog with this id')
@@ -57,14 +57,14 @@ export const updateBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
         imageUrl = cloud.secure_url
     }
     
-    const updatedBlog = await sql`update blogs set
+    const updatedBlog = await sql`UPDATE BLOGS SET
     title = ${title || blog[0]?.title},
     description = ${description || blog[0]?.description},
     content = ${content || blog[0]?.content}, 
     category = ${category || blog[0]?.category},
     image = ${imageUrl}
-    where id = ${id} 
-    returning *`;
+    WHERE id = ${id} 
+    RETURNING *`;
 
     res.status(200).json({
         message: "Blog Updated",

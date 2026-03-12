@@ -2,7 +2,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import sql from './utils/db.js';
-import blogRoutes from './routes/blogs.js';
+import blogRoutes from './routes/blog.js';
 import {v2 as cloudinary} from 'cloudinary';
 
 dotenv.config();

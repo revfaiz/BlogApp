@@ -2,7 +2,7 @@
 import express from 'express';
 import { isAuth } from '../middlewares/isAuth.js';
 import uploadFile from '../middlewares/multer.js';
-import { createBlog } from '../controller/blog.js';
+import { createBlog } from '../controller/create_blogs.js';
 import { updateBlog } from '../controller/update_blog.js';
 import { deleteBlog } from '../controller/delete_blog.js';
 

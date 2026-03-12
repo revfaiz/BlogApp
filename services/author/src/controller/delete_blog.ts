@@ -6,7 +6,7 @@ export const deleteBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
     console.log('[AuthorBlogController] Received blog deletion request');
     const { id } = req.params;
     console.log(`[AuthorBlogController] Deleting blog with id: ${id} by user: ${req.user?._id}`);
-    const blog = await sql`select * from blogs where id = ${id}`;
+    const blog = await sql`SELECT * FROM BLOGS WHERE id = ${id}`;
 
     if(!blog.length){
         console.log('[AuthorBlogController] No blog found with the provided id');
@@ -20,7 +20,7 @@ export const deleteBlog = TryCatch(async(req:AuthenticatedRequest, res)=>{
             message : "You are not allowed to Perform this Action"
         })
     }
-    await sql`delete from blogs where id = ${id}`;
+    await sql`DELETE * FROM BLOGS WHERE id = ${id}`;
 
     res.status(200).json({
         message:"Blog Deleted"
